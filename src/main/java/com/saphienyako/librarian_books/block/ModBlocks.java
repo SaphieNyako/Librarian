@@ -26,6 +26,7 @@ public class ModBlocks {
             () -> new Block(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).sound(SoundType.METAL)));
 
     TODO add GEO
+    TODO add to recipes and tags
 
      */
 
