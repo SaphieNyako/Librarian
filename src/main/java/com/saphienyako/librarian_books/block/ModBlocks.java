@@ -21,9 +21,15 @@ public class ModBlocks {
     public static final DeferredRegister<Block> BLOCKS =
             DeferredRegister.create(ForgeRegistries.BLOCKS, LibrarianBooks.MOD_ID);
 
-     /* BLOCKS TO BE ADDED
+ /* BLOCKS TO BE ADDED
     public static final RegistryObject<Block> LIBRARY_BELL = registerBlockAndItem("library_bell",
-            () -> new Block(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).sound(SoundType.METAL)));
+            () -> new Block(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
+                    .sound(SoundType.METAL)
+                    .noOcclusion()
+                    .randomTicks()
+                    .noCollission()));
+
+
 
     TODO add GEO
     TODO add to recipes and tags

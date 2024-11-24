@@ -3,6 +3,7 @@ package com.saphienyako.librarian_books;
 import com.mojang.logging.LogUtils;
 import com.saphienyako.librarian_books.item.ModCreativeModeTab;
 import com.saphienyako.librarian_books.item.ModItems;
+import com.saphienyako.librarian_books.network.LibrarianBooksNetwork;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
@@ -35,7 +36,7 @@ public class LibrarianBooks
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
-
+        event.enqueueWork(LibrarianBooksNetwork::register);
     }
 
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
