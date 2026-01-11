@@ -1,0 +1,8 @@
+{
+  "creative_tab.lore_master_creative_tab": "Lore Master",
+  "message.lore_master.initial": "[Lore Master] Hello stranger, welcome! Ah- looking for knowledge?",
+  "message.lore_master.bell_angry": "[Lore Master] SECURITY!!",
+  "message.lore_master.bell_annoyed": "[Lore Master] I'm here already, please be quiet!",
+  "entity.lore_master.lore_master": "Lore Master",
+  "title.lore_master.books_available": "- Available Books -"
+}

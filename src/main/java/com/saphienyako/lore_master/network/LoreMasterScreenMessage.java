@@ -1,5 +1,6 @@
-package com.saphienyako.librarian_books.network;
+package com.saphienyako.lore_master.network;
 
+import com.saphienyako.lore_master.screens.LibrarianScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -9,19 +10,19 @@ import net.minecraftforge.network.NetworkEvent;
 import java.util.List;
 import java.util.function.Supplier;
 
-public record LibraryScreenMessage(Component title, List<ItemStack> books) {
+public record LoreMasterScreenMessage(Component title, List<ItemStack> books) {
 
-    public static void encode(LibraryScreenMessage msg, FriendlyByteBuf buffer) {
+    public static void encode(LoreMasterScreenMessage msg, FriendlyByteBuf buffer) {
         buffer.writeComponent(msg.title());
         PacketUtil.writeList(msg.books(), buffer, FriendlyByteBuf::writeItem);
     }
 
-    public static LibraryScreenMessage decode(FriendlyByteBuf buffer) {
+    public static LoreMasterScreenMessage decode(FriendlyByteBuf buffer) {
         Component cmp = buffer.readComponent();
         List<ItemStack> stacks = PacketUtil.readList(buffer, FriendlyByteBuf::readItem);
-        return new LibraryScreenMessage(cmp, stacks);
+        return new LoreMasterScreenMessage(cmp, stacks);
     }
     public void handle(Supplier<NetworkEvent.Context> supplier) {
-       // Minecraft.getInstance().setScreen(new LibrarianScreen(msg.title(), msg.books())); //TODO add Screen
+       Minecraft.getInstance().setScreen(new LibrarianScreen(this.title, this.books));
     }
 }

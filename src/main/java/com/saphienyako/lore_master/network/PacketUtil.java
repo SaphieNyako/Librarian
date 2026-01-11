@@ -1,4 +1,4 @@
-package com.saphienyako.librarian_books.network;
+package com.saphienyako.lore_master.network;
 
 import net.minecraft.network.FriendlyByteBuf;
 

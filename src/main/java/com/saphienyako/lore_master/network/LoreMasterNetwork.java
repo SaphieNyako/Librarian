@@ -1,17 +1,14 @@
-package com.saphienyako.librarian_books.network;
+package com.saphienyako.lore_master.network;
 
-import com.saphienyako.librarian_books.LibrarianBooks;
-import net.minecraft.core.BlockPos;
+import com.saphienyako.lore_master.LoreMasterMod;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.Level;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 
-public class LibrarianBooksNetwork {
+public class LoreMasterNetwork {
 
     private static SimpleChannel INSTANCE;
     private static int packetId = 0;
@@ -21,7 +18,7 @@ public class LibrarianBooksNetwork {
 
     public static void register() {
         SimpleChannel net = NetworkRegistry.ChannelBuilder
-                .named(new ResourceLocation(LibrarianBooks.MOD_ID, "messages"))
+                .named(new ResourceLocation(LoreMasterMod.MOD_ID, "messages"))
                 .networkProtocolVersion(() -> "1.0")
                 .clientAcceptedVersions(s -> true)
                 .serverAcceptedVersions(s -> true)
@@ -29,13 +26,17 @@ public class LibrarianBooksNetwork {
 
         INSTANCE = net;
 
-        net.messageBuilder(LibraryScreenMessage.class, id(), NetworkDirection.PLAY_TO_CLIENT)
-                .decoder(LibraryScreenMessage::decode)
-                .encoder(LibraryScreenMessage::encode)
-                .consumerMainThread(LibraryScreenMessage::handle)
+        net.messageBuilder(LoreMasterScreenMessage.class, id(), NetworkDirection.PLAY_TO_CLIENT)
+                .decoder(LoreMasterScreenMessage::decode)
+                .encoder(LoreMasterScreenMessage::encode)
+                .consumerMainThread(LoreMasterScreenMessage::handle)
                 .add();
 
-
+        net.messageBuilder(RequestItemMessage.class, id(), NetworkDirection.PLAY_TO_SERVER)
+                .decoder(RequestItemMessage::decode)
+                .encoder(RequestItemMessage::encode)
+                .consumerMainThread(RequestItemMessage::handle)
+                .add();
 
     }
 

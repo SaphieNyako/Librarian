@@ -1,12 +1,11 @@
-package com.saphienyako.librarian_books.block;
+package com.saphienyako.lore_master.block;
 
-import com.saphienyako.librarian_books.LibrarianBooks;
-import com.saphienyako.librarian_books.item.ModItems;
+import com.saphienyako.lore_master.LoreMasterMod;
+import com.saphienyako.lore_master.item.ModItems;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.LadderBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -19,22 +18,16 @@ import java.util.function.Supplier;
 public class ModBlocks {
 
     public static final DeferredRegister<Block> BLOCKS =
-            DeferredRegister.create(ForgeRegistries.BLOCKS, LibrarianBooks.MOD_ID);
+            DeferredRegister.create(ForgeRegistries.BLOCKS, LoreMasterMod.MOD_ID);
 
- /* BLOCKS TO BE ADDED
     public static final RegistryObject<Block> LIBRARY_BELL = registerBlockAndItem("library_bell",
-            () -> new Block(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
-                    .sound(SoundType.METAL)
+            () -> new LibraryBellBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
+                    .strength(3f, 10f)
+                    .noLootTable()
                     .noOcclusion()
                     .randomTicks()
-                    .noCollission()));
-
-
-
-    TODO add GEO
-    TODO add to recipes and tags
-
-     */
+                    .noCollission()
+                    .sound(SoundType.ANVIL)));
 
     private static <T extends Block> RegistryObject<T> registerBlock(String name, Supplier<T> block) {
         return BLOCKS.register(name, block);
