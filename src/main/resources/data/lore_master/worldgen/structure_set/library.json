@@ -1,0 +1,15 @@
+{
+  "placement": {
+    "type": "minecraft:random_spread",
+    "frequency": 0.9,
+    "salt": 447514988,
+    "separation": 20,
+    "spacing": 50
+  },
+  "structures": [
+    {
+      "structure": "lore_master:library",
+      "weight": 1
+    }
+  ]
+}
