@@ -3,12 +3,14 @@ package com.saphienyako.lore_master.block;
 
 
 import com.saphienyako.lore_master.block.entity.LibraryBellBlockEntity;
+import com.saphienyako.lore_master.entity.BellsnickelEntity;
 import com.saphienyako.lore_master.entity.LoreMasterEntity;
 import com.saphienyako.lore_master.entity.ModEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
@@ -27,13 +29,19 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
+import java.util.Objects;
 
 public class LibraryBellBlock extends BaseEntityBlock implements EntityBlock {
 
@@ -45,17 +53,28 @@ public class LibraryBellBlock extends BaseEntityBlock implements EntityBlock {
 
     @SuppressWarnings("deprecation")
     @Override
-    public void onRemove(@Nonnull BlockState state,@Nonnull Level level,@Nonnull BlockPos pos,@Nonnull BlockState newState, boolean moving) {
-        if (!level.isClientSide && level instanceof ServerLevel) {
-            LibraryBellBlockEntity tile =  new LibraryBellBlockEntity(pos, newState);
-            if (tile.getLoreMaster() != null) {
-                Entity loreMaster = ((ServerLevel) level).getEntity(tile.getLoreMaster());
-                if (loreMaster instanceof Villager) ((Villager) loreMaster).releaseAllPois();
-                if (loreMaster != null) loreMaster.remove(Entity.RemovalReason.DISCARDED);
-            }
-            if (tile.getSecurity() != null) {
-                Entity security = ((ServerLevel) level).getEntity(tile.getSecurity());
-                if (security != null) security.remove(Entity.RemovalReason.DISCARDED);
+    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moving) {
+        if (!level.isClientSide && state.getBlock() != newState.getBlock()) {
+
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof LibraryBellBlockEntity tile && level instanceof ServerLevel server) {
+
+                if (tile.getLoreMaster() != null) {
+                    Entity loreMaster = server.getEntity(tile.getLoreMaster());
+                    if (loreMaster instanceof Villager villager) {
+                        villager.releaseAllPois();
+                    }
+                    if (loreMaster != null) {
+                        loreMaster.remove(Entity.RemovalReason.DISCARDED);
+                    }
+                }
+
+                if (tile.getSecurity() != null) {
+                    Entity security = server.getEntity(tile.getSecurity());
+                    if (security != null) {
+                        security.remove(Entity.RemovalReason.DISCARDED);
+                    }
+                }
             }
         }
         super.onRemove(state, level, pos, newState, moving);
@@ -101,16 +120,8 @@ public class LibraryBellBlock extends BaseEntityBlock implements EntityBlock {
                 Entity security = blockEntity.getSecurity() != null ? ((ServerLevel) level).getEntity(blockEntity.getSecurity()) : null;
                 if (blockEntity.getAnnoyance() >= 10 && loreMaster != null && loreMaster.isAlive()) {
                     blockEntity.setAnnoyance(0);
-                    //TODO Replace with??
                     if (security == null) {
-                        IronGolem golem = new IronGolem(EntityType.IRON_GOLEM, level);
-                        golem.setPlayerCreated(false);
-                        golem.setTarget(player);
-                        player.sendSystemMessage(Component.translatable("message.lore_master.bell_angry"));
-                        golem.setPos(loreMaster.getX(), loreMaster.getY(), loreMaster.getZ());
-                        level.addFreshEntity(golem);
-                        blockEntity.setSecurity(golem.getUUID());
-
+                        summonSecurity(level, player, loreMaster.position(), blockEntity );
                     } else {
                         security.setPos(loreMaster.getX(), loreMaster.getY(), loreMaster.getZ());
                         if (security instanceof Mob) {
@@ -121,58 +132,90 @@ public class LibraryBellBlock extends BaseEntityBlock implements EntityBlock {
                     player.sendSystemMessage(Component.translatable("message.lore_master.bell_annoyed"));
                 }
 
-                if (loreMaster != null && loreMaster.isAlive()) {
-                    if (loreMaster instanceof Villager) ((Villager) loreMaster).releaseAllPois();
+                if (loreMaster != null) {
+                    if (loreMaster instanceof Villager villager) {
+                        villager.releaseAllPois();
+                    }
                     loreMaster.remove(Entity.RemovalReason.DISCARDED);
                 }
-
-                LoreMasterEntity entity = new LoreMasterEntity(ModEntities.LORE_MASTER.get(), level);
-                VillagerData villagerData = new VillagerData(VillagerType.byBiome(player.level().getBiome(pos)), VillagerProfession.LIBRARIAN, 1);
-                entity.setVillagerData(villagerData);
-                entity.setVillagerXp(1);
-                entity.setPos(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
-                for (Direction dir : Direction.values()) {
-                    if (dir.getAxis() != Direction.Axis.Y) {
-                        BlockPos target = pos.below().relative(dir);
-                        if (level.getBlockState(target).isAir()) {
-                            entity.setPos(target.getX() + 0.5, target.getY(), target.getZ() + 0.5);
-                            break;
-                        }
-                    }
-                }
-                level.addFreshEntity(entity);
-                blockEntity.setLoreMaster(entity.getUUID());
+                summonLoreMaster(level, player, blockEntity, pos);
             }
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
-    @Override
-    public boolean isRandomlyTicking(@Nonnull BlockState state) {
-        return true;
-    }
 
+    @Nullable
     @Override
-    @SuppressWarnings("deprecation")
-    public void randomTick(@Nonnull BlockState state, ServerLevel level, @Nonnull BlockPos pos, @Nonnull RandomSource random) {
-        LibraryBellBlockEntity entity = (LibraryBellBlockEntity) level.getBlockEntity(pos);
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level,@Nonnull BlockState state,@Nonnull BlockEntityType<T> type) {
+        if (level.isClientSide) return null;
 
-        if (entity != null && entity.getSecurity() != null) {
-            Entity security = level.getEntity(entity.getSecurity());
-            if (security != null) {
-                entity.setDespawnTimer(entity.getDespawnTimer() + 1);
-                if (entity.getDespawnTimer() >= 2) {
-                    entity.setDespawnTimer(0);
-                    security.remove(Entity.RemovalReason.DISCARDED);
-                }
+        return (tickLevel, pos, blockState, be) -> {
+            if (be instanceof LibraryBellBlockEntity bell && tickLevel instanceof ServerLevel serverLevel) {
+                bell.serverTick(serverLevel);
             }
-        }
+        };
     }
+
+
+
 
     @Nullable
     @Override
     public BlockEntity newBlockEntity(@Nonnull BlockPos blockPos,@Nonnull BlockState blockState) {
         return new LibraryBellBlockEntity(blockPos, blockState);
+    }
+
+    public void summonSecurity(Level level, Player player, Vec3 position, LibraryBellBlockEntity blockEntity){
+        IronGolem golem = new IronGolem(EntityType.IRON_GOLEM, level);
+        golem.setPlayerCreated(false);
+        golem.setTarget(player);
+        golem.setPersistenceRequired();
+        player.sendSystemMessage(Component.translatable("message.lore_master.bell_angry"));
+        golem.setPos(position);
+        level.addFreshEntity(golem);
+        blockEntity.setSecurity(golem.getUUID());
+    }
+
+    public void summonLoreMaster(Level level, Player player, LibraryBellBlockEntity blockEntity, BlockPos pos){
+        if (ModList.get().isLoaded("feywild")) {
+            BellsnickelEntity entity = new BellsnickelEntity(ModEntities.BELLSNICKEL.get(), level);
+            entity.setPos(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
+            for (Direction dir : Direction.values()) {
+                if (dir.getAxis() != Direction.Axis.Y) {
+                    BlockPos target = pos.below().relative(dir);
+                    if (level.getBlockState(target).isAir()) {
+                        entity.setPos(target.getX() + 0.5, target.getY(), target.getZ() + 0.5);
+                        break;
+                    }
+                }
+            }
+            level.addFreshEntity(entity);
+            blockEntity.setLoreMaster(entity.getUUID());
+        } else {
+            //if Feywild is not installed
+            LoreMasterEntity entity = new LoreMasterEntity(ModEntities.LORE_MASTER.get(), level);
+            VillagerData villagerData = new VillagerData(VillagerType.byBiome(player.level().getBiome(pos)), VillagerProfession.LIBRARIAN, 1);
+            entity.setVillagerData(villagerData);
+            entity.setVillagerXp(1);
+            entity.setPos(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
+            for (Direction dir : Direction.values()) {
+                if (dir.getAxis() != Direction.Axis.Y) {
+                    BlockPos target = pos.below().relative(dir);
+                    if (level.getBlockState(target).isAir()) {
+                        entity.setPos(target.getX() + 0.5, target.getY(), target.getZ() + 0.5);
+                        break;
+                    }
+                }
+            }
+            level.addFreshEntity(entity);
+            blockEntity.setLoreMaster(entity.getUUID());
+        }
+
+
+
+        //if Feywild is installed
+
     }
 }
 

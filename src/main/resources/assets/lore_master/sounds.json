@@ -1,0 +1,27 @@
+{
+
+  "bellsnickel_ambiance": {
+    "subtitles": "message.lore_master.bellsnickel_ambiance",
+    "sounds": [
+      "lore_master:bellsnickel_ambiance"
+    ]
+  },
+  "bellsnickel_hurt": {
+    "subtitles": "sounds.lore_master.bellsnickel_hurt",
+    "sounds": [
+      "lore_master:bellsnickel_hurt"
+    ]
+  },
+  "bellsnickel_death": {
+    "subtitles": "sounds.lore_master.bellsnickel_death",
+    "sounds": [
+      "lore_master:bellsnickel_death"
+    ]
+  },
+  "bellsnickel_trade": {
+    "subtitles": "message.lore_master.bellsnickel_trade",
+    "sounds": [
+      "lore_master:bellsnickel_trade"
+    ]
+  }
+}

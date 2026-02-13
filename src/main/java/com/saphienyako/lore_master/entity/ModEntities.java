@@ -16,6 +16,9 @@ public class ModEntities {
     public static final RegistryObject<EntityType<LoreMasterEntity>> LORE_MASTER =
             ENTITY_TYPES.register("lore_master", () -> EntityType.Builder.of(LoreMasterEntity::new, MobCategory.CREATURE).build("lore_master"));
 
+    public static final RegistryObject<EntityType<BellsnickelEntity>> BELLSNICKEL =
+            ENTITY_TYPES.register("bellsnickel", () -> EntityType.Builder.of(BellsnickelEntity::new, MobCategory.CREATURE).build("bellsnickel"));
+
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);
     }

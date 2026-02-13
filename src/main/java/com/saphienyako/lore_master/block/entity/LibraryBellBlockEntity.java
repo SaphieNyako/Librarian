@@ -2,6 +2,8 @@ package com.saphienyako.lore_master.block.entity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -97,6 +99,27 @@ public class LibraryBellBlockEntity extends BlockEntity {
             nbt.remove("Security");
         } else {
             nbt.putUUID("Security", this.security);
+        }
+    }
+
+    public void serverTick(ServerLevel level) {
+        if (this.security == null) return;
+
+        Entity securityEntity = level.getEntity(this.security);
+        if (securityEntity == null || !securityEntity.isAlive()) {
+            this.security = null;
+            this.despawnTimer = 0;
+            setChanged();
+            return;
+        }
+
+        this.despawnTimer++;
+
+        if (this.despawnTimer >= 20 * 5) {
+            securityEntity.remove(Entity.RemovalReason.DISCARDED);
+            this.security = null;
+            this.despawnTimer = 0;
+            setChanged();
         }
     }
 }

@@ -20,7 +20,6 @@ public class ModCreativeModeTab {
                     .title(Component.translatable("creative_tab.lore_master_creative_tab"))
                     .displayItems((pParameters, pOutput) -> {
                         pOutput.accept(ModBlocks.LIBRARY_BELL.get());
-                        pOutput.accept(ModItems.SPAWN_EGG_LORE_MASTER.get());
                     })
                     .build());
 

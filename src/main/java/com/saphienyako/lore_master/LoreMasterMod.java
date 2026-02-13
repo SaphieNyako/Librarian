@@ -6,11 +6,17 @@ import com.saphienyako.lore_master.block.entity.LibraryBellBlockEntity;
 import com.saphienyako.lore_master.block.entity.ModBlockEntities;
 import com.saphienyako.lore_master.block.renderer.LibraryBellRenderer;
 import com.saphienyako.lore_master.data.LibraryBooks;
+import com.saphienyako.lore_master.entity.BellsnickelEntity;
 import com.saphienyako.lore_master.entity.LoreMasterEntity;
 import com.saphienyako.lore_master.entity.ModEntities;
+import com.saphienyako.lore_master.entity.model.BellsnickelModel;
+import com.saphienyako.lore_master.entity.model.ModModelLayers;
+import com.saphienyako.lore_master.entity.renderer.BellsnickelRenderer;
 import com.saphienyako.lore_master.item.ModCreativeModeTab;
 import com.saphienyako.lore_master.item.ModItems;
 import com.saphienyako.lore_master.network.LoreMasterNetwork;
+import com.saphienyako.lore_master.sounds.ModSounds;
+import net.minecraft.client.model.CowModel;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.client.renderer.entity.EntityRenderers;
@@ -18,6 +24,8 @@ import net.minecraft.client.renderer.entity.VillagerRenderer;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
@@ -26,6 +34,7 @@ import net.minecraftforge.event.entity.SpawnPlacementRegisterEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -43,12 +52,16 @@ public class LoreMasterMod
     public LoreMasterMod() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         modEventBus.addListener(this::entityAttributes);
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+            modEventBus.addListener(this::registerLayer);
+        });
 
         ModCreativeModeTab.register(modEventBus);
         ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);
         ModEntities.register(modEventBus);
         ModBlockEntities.register(modEventBus);
+        ModSounds.register(modEventBus);
 
         modEventBus.addListener(this::commonSetup);
         MinecraftForge.EVENT_BUS.addListener(this::reloadData);
@@ -70,21 +83,29 @@ public class LoreMasterMod
 
     }
 
+    @OnlyIn(Dist.CLIENT)
+    private void registerLayer(EntityRenderersEvent.RegisterLayerDefinitions event) {
+        event.registerLayerDefinition( ModModelLayers.BELLSNICKEL_LAYER, BellsnickelModel::createBodyLayer);
+    }
+
     @Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
     public static class ClientModEvents {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
             EntityRenderers.register(ModEntities.LORE_MASTER.get(), VillagerRenderer::new);
+            EntityRenderers.register(ModEntities.BELLSNICKEL.get(), BellsnickelRenderer::new);
             BlockEntityRenderers.register(ModBlockEntities.LIBRARY_BELL_BLOCK_ENTITY.get(), LibraryBellRenderer::new);
         }
     }
 
     private void entityAttributes(EntityAttributeCreationEvent event) {
         event.put(ModEntities.LORE_MASTER.get(), LoreMasterEntity.createAttributes().build());
+        event.put(ModEntities.BELLSNICKEL.get(), BellsnickelEntity.getDefaultAttributes().build());
     }
 
     private void spawnPlacement(SpawnPlacementRegisterEvent event) {
         event.register(ModEntities.LORE_MASTER.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, LoreMasterEntity::canSpawn, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        event.register(ModEntities.BELLSNICKEL.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, BellsnickelEntity::canSpawn,SpawnPlacementRegisterEvent.Operation.REPLACE);
     }
 
     public void reloadData(AddReloadListenerEvent event) {
