@@ -16,32 +16,31 @@ import com.saphienyako.lore_master.item.ModCreativeModeTab;
 import com.saphienyako.lore_master.item.ModItems;
 import com.saphienyako.lore_master.network.LoreMasterNetwork;
 import com.saphienyako.lore_master.sounds.ModSounds;
-import net.minecraft.client.model.CowModel;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.client.renderer.entity.VillagerRenderer;
+import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.AddReloadListenerEvent;
-import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
-import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
-import net.minecraftforge.event.entity.SpawnPlacementRegisterEvent;
-import net.minecraftforge.event.server.ServerStartingEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.AddReloadListenerEvent;
+import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
+import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
+import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import org.slf4j.Logger;
 
-// The value here should match an entry in the META-INF/mods.toml file
+// The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(LoreMasterMod.MOD_ID)
 public class LoreMasterMod
 {
@@ -49,12 +48,11 @@ public class LoreMasterMod
     private static final Logger LOGGER = LogUtils.getLogger();
 
     @SuppressWarnings("removal")
-    public LoreMasterMod() {
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+    public LoreMasterMod(IEventBus modEventBus, ModContainer modContainer) {
+
+        modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::entityAttributes);
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
-            modEventBus.addListener(this::registerLayer);
-        });
+        modEventBus.addListener(LoreMasterNetwork::register);
 
         ModCreativeModeTab.register(modEventBus);
         ModItems.register(modEventBus);
@@ -63,39 +61,22 @@ public class LoreMasterMod
         ModBlockEntities.register(modEventBus);
         ModSounds.register(modEventBus);
 
-        modEventBus.addListener(this::commonSetup);
-        MinecraftForge.EVENT_BUS.addListener(this::reloadData);
+        NeoForge.EVENT_BUS.addListener(this::reloadData);
 
-        MinecraftForge.EVENT_BUS.register(this);
+        NeoForge.EVENT_BUS.register(this);
         modEventBus.addListener(this::addCreative);
     }
 
+    public void reloadData(AddReloadListenerEvent event) {
+        event.addListener(LibraryBooks.createReloadListener(event.getRegistryAccess()));
+    }
+
     private void commonSetup(final FMLCommonSetupEvent event) {
-        event.enqueueWork(LoreMasterNetwork::register);
+
     }
 
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
         //Added ModCreativeModeTab for the mod itself
-    }
-
-    @SubscribeEvent
-    public void onServerStarting(ServerStartingEvent event) {
-
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    private void registerLayer(EntityRenderersEvent.RegisterLayerDefinitions event) {
-        event.registerLayerDefinition( ModModelLayers.BELLSNICKEL_LAYER, BellsnickelModel::createBodyLayer);
-    }
-
-    @Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
-    public static class ClientModEvents {
-        @SubscribeEvent
-        public static void onClientSetup(FMLClientSetupEvent event) {
-            EntityRenderers.register(ModEntities.LORE_MASTER.get(), VillagerRenderer::new);
-            EntityRenderers.register(ModEntities.BELLSNICKEL.get(), BellsnickelRenderer::new);
-            BlockEntityRenderers.register(ModBlockEntities.LIBRARY_BELL_BLOCK_ENTITY.get(), LibraryBellRenderer::new);
-        }
     }
 
     private void entityAttributes(EntityAttributeCreationEvent event) {
@@ -103,12 +84,32 @@ public class LoreMasterMod
         event.put(ModEntities.BELLSNICKEL.get(), BellsnickelEntity.getDefaultAttributes().build());
     }
 
-    private void spawnPlacement(SpawnPlacementRegisterEvent event) {
-        event.register(ModEntities.LORE_MASTER.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, LoreMasterEntity::canSpawn, SpawnPlacementRegisterEvent.Operation.REPLACE);
-        event.register(ModEntities.BELLSNICKEL.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, BellsnickelEntity::canSpawn,SpawnPlacementRegisterEvent.Operation.REPLACE);
+
+    @SubscribeEvent
+    public void onServerStarting(ServerStartingEvent event) {
+
     }
 
-    public void reloadData(AddReloadListenerEvent event) {
-        event.addListener(LibraryBooks.createReloadListener());
+    @EventBusSubscriber(modid = MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    public static class ClientModEvents {
+        @SubscribeEvent
+        public static void onClientSetup(FMLClientSetupEvent event) {
+            EntityRenderers.register(ModEntities.LORE_MASTER.get(), VillagerRenderer::new);
+            EntityRenderers.register(ModEntities.BELLSNICKEL.get(), BellsnickelRenderer::new);
+            BlockEntityRenderers.register(ModBlockEntities.LIBRARY_BELL_BLOCK_ENTITY.get(), LibraryBellRenderer::new);
+        }
+
+        @SubscribeEvent
+        private static void spawnPlacement(RegisterSpawnPlacementsEvent event) {
+            event.register(ModEntities.LORE_MASTER.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, LoreMasterEntity::canSpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
+            event.register(ModEntities.BELLSNICKEL.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, BellsnickelEntity::canSpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
+
+        }
+
+        @SubscribeEvent
+        public static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
+            event.registerLayerDefinition( ModModelLayers.BELLSNICKEL_LAYER, BellsnickelModel::createBodyLayer);
+        }
+
     }
 }

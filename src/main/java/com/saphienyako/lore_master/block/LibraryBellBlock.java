@@ -2,6 +2,7 @@ package com.saphienyako.lore_master.block;
 
 
 
+import com.mojang.serialization.MapCodec;
 import com.saphienyako.lore_master.block.entity.LibraryBellBlockEntity;
 import com.saphienyako.lore_master.entity.BellsnickelEntity;
 import com.saphienyako.lore_master.entity.LoreMasterEntity;
@@ -18,6 +19,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -27,6 +29,7 @@ import net.minecraft.world.entity.npc.VillagerData;
 import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraft.world.entity.npc.VillagerType;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.*;
@@ -38,8 +41,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.fml.ModList;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
@@ -47,10 +49,17 @@ import java.util.Objects;
 
 public class LibraryBellBlock extends BaseEntityBlock implements EntityBlock {
 
+    public static final MapCodec<LibraryBellBlock> CODEC = simpleCodec(LibraryBellBlock::new);
+
     public static final VoxelShape SHAPE = box(0, 0, 0, 16, 16, 16);
 
     public LibraryBellBlock(Properties properties) {
         super(properties);
+    }
+
+    @Override
+    protected MapCodec<? extends BaseEntityBlock> codec() {
+        return CODEC;
     }
 
     @SuppressWarnings("deprecation")
@@ -63,9 +72,6 @@ public class LibraryBellBlock extends BaseEntityBlock implements EntityBlock {
 
                 if (tile.getLoreMaster() != null) {
                     Entity loreMaster = server.getEntity(tile.getLoreMaster());
-                    if (loreMaster instanceof Villager villager) {
-                        villager.releaseAllPois();
-                    }
                     if (loreMaster != null) {
                         loreMaster.remove(Entity.RemovalReason.DISCARDED);
                     }
@@ -101,11 +107,9 @@ public class LibraryBellBlock extends BaseEntityBlock implements EntityBlock {
         return blockEntity instanceof LibraryBellBlockEntity bell ? bell : null;
     }
 
-
     @Nonnull
     @Override
-    @SuppressWarnings("deprecation")
-    public InteractionResult use(@Nonnull BlockState state, Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull InteractionHand hand, @Nonnull BlockHitResult trace) {
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult trace) {
         if (level.isClientSide) {
             level.playSound(player, pos, SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.BLOCKS, 1f, 1.2f);
         } else {
@@ -135,15 +139,12 @@ public class LibraryBellBlock extends BaseEntityBlock implements EntityBlock {
                 }
 
                 if (loreMaster != null) {
-                    if (loreMaster instanceof Villager villager) {
-                        villager.releaseAllPois();
-                    }
                     loreMaster.remove(Entity.RemovalReason.DISCARDED);
                 }
                 summonLoreMaster(level, player, blockEntity, pos);
             }
         }
-        return InteractionResult.sidedSuccess(level.isClientSide);
+        return ItemInteractionResult.sidedSuccess(level.isClientSide);
     }
 
 

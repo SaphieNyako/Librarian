@@ -1,11 +1,11 @@
 package com.saphienyako.lore_master.block.entity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
 import javax.annotation.Nonnull;
@@ -70,9 +70,10 @@ public class LibraryBellBlockEntity extends BlockEntity {
         this.despawnTimer = despawnTimer;
     }
 
+
     @Override
-    public void load(@Nonnull CompoundTag nbt) {
-        super.load(nbt);
+    protected void loadAdditional(@Nonnull CompoundTag nbt,@Nonnull HolderLookup.Provider provider) {
+        super.loadAdditional(nbt, provider);
         this.annoyance = nbt.getInt("Annoyance");
         this.player = nbt.hasUUID("Player") ? nbt.getUUID("Player") : null;
         this.loreMaster = nbt.hasUUID("LoreMaster") ? nbt.getUUID("LoreMaster") : null;
@@ -81,8 +82,8 @@ public class LibraryBellBlockEntity extends BlockEntity {
     }
 
     @Override
-    public void saveAdditional(@Nonnull CompoundTag nbt) {
-        super.saveAdditional(nbt);
+    protected void saveAdditional(@Nonnull CompoundTag nbt,@Nonnull HolderLookup.Provider provider) {
+        super.saveAdditional(nbt, provider);
         nbt.putInt("Annoyance", this.annoyance);
         nbt.putInt("DespawnTimer", this.despawnTimer);
         if (this.player == null) {

@@ -1,19 +1,37 @@
 package com.saphienyako.lore_master.data;
 
 import com.google.gson.*;
+import net.minecraft.core.Holder;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.GsonHelper;
+import net.minecraft.util.Mth;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.crafting.CraftingHelper;
-import net.minecraftforge.fml.ModList;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.component.ItemLore;
+import net.minecraft.world.item.component.SuspiciousStewEffects;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.neoforged.fml.ModList;
+
 
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 public class DatapackHelper {
@@ -23,61 +41,38 @@ public class DatapackHelper {
             .setPrettyPrinting() //easier to read
             .create();
 
-    public static List<ItemStack> loadStackList(ResourceManager manager, String path, String name) {
-
+    public static List<ItemStack> loadStackList(ResourceManager manager, String folder, String filename, RegistryAccess registryAccess) {
         List<ItemStack> result = new ArrayList<>();
+        String targetPath = folder + "/" + filename + ".json";
 
-        String targetPath = path + "/" + name + ".json";
+        Map<ResourceLocation, Resource> resources = manager.listResources(folder, loc -> loc.getPath().equals(targetPath));
 
-        // Find all matching datapack resources
-        Map<ResourceLocation, Resource> resources =
-                manager.listResources(path, new Predicate<ResourceLocation>() {
-                    @Override
-                    public boolean test(ResourceLocation location) {
-                        return location.getPath().equals(targetPath);
-                    }
-                });
-
-        // Iterate through each resource (datapack file)
         for (Map.Entry<ResourceLocation, Resource> entry : resources.entrySet()) {
-
             ResourceLocation id = entry.getKey();
             Resource resource = entry.getValue();
 
             try (Reader reader = resource.openAsReader()) {
-
                 JsonElement root = GsonHelper.fromJson(GSON, reader, JsonElement.class);
+                if (!root.isJsonArray()) continue;
 
-                if (!root.isJsonArray()) {
-                    continue;
-                }
-
-                JsonArray array = root.getAsJsonArray();
-
-                for (JsonElement element : array) {
-
-                    if (!element.isJsonObject()) {
-                        continue;
-                    }
+                for (JsonElement element : root.getAsJsonArray()) {
+                    if (!element.isJsonObject()) continue;
 
                     JsonObject json = element.getAsJsonObject();
-
-                    // Optional mod dependency check
                     if (json.has("mod")) {
                         String modid = json.get("mod").getAsString();
-                        if (!ModList.get().isLoaded(modid)) {
-                            continue;
+                        if (!ModList.get().isLoaded(modid)) continue;
+                    }
+
+                    ItemStack stack = itemStackFromJson(json, registryAccess);
+                    if (!stack.isEmpty()) {
+                        int weight = json.has("rarity") ? json.get("rarity").getAsInt() : 1;
+                        weight = Mth.clamp(weight, 1, 10);
+                        for (int i = 0; i < weight; i++) {
+                            result.add(stack.copy());
                         }
                     }
-
-                    // Convert JSON → ItemStack
-                    ItemStack stack = CraftingHelper.getItemStack(json, true);
-
-                    if (!stack.isEmpty()) {
-                        result.add(stack);
-                    }
                 }
-
             } catch (Exception e) {
                 throw new RuntimeException("Failed to load datapack resource: " + id, e);
             }
@@ -86,43 +81,104 @@ public class DatapackHelper {
         return result;
     }
 
-    /*
-    public static List<ItemStack> loadStackList(ResourceManager manager, String path, String name) {
+    private static ItemStack itemStackFromJson(JsonObject json, RegistryAccess registryAccess) {
+        if (!json.has("item")) return ItemStack.EMPTY;
 
-        try {
-            var jsonArrays = DataLoader.joinJson(
-                    DataLoader.locate(manager, path + "/" + name + ".json", name), //search path
-                    (id, data) -> data.getAsJsonArray()
-            );
+        ResourceLocation itemId = ResourceLocation.tryParse(json.get("item").getAsString());
+        if (itemId == null) return ItemStack.EMPTY;
 
-            List<ItemStack> result = new ArrayList<>();
+        Item item = BuiltInRegistries.ITEM.get(itemId);
+        if (item == Items.AIR) return ItemStack.EMPTY;
 
-            for (JsonArray array : jsonArrays.toList()) {
-                for (JsonElement element : array) {
+        int count = json.has("count") ? json.get("count").getAsInt() : 1;
+        ItemStack stack = new ItemStack(item, count);
 
-                    if (!element.isJsonObject())//everything in list should be json object
-                        continue;
+        if (json.has("enchantments")) {
+            JsonObject enchantments = json.getAsJsonObject("enchantments");
 
-                    JsonObject json = element.getAsJsonObject(); //get the json object
+            EnchantmentHelper.updateEnchantments(stack, mutable -> enchantments.entrySet().forEach(entry -> {
+                ResourceLocation enchantmentId = ResourceLocation.tryParse(entry.getKey());
+                if (enchantmentId == null) return;
 
-                    if (json.has("mod")) { //"mod"
-                        String modid = json.get("mod").getAsString();
-                        if (!ModList.get().isLoaded(modid)) //is mod installed
-                            continue;
-                    }
+                int level = entry.getValue().getAsInt();
 
-                    ItemStack stack = CraftingHelper.getItemStack(json, true);  //"item" "count" "nbt"
-                    if (!stack.isEmpty()) {
-                        result.add(stack);
-                    }
-                }
+                Holder<Enchantment> holder = registryAccess
+                        .lookupOrThrow(Registries.ENCHANTMENT)
+                        .getOrThrow(ResourceKey.create(Registries.ENCHANTMENT, enchantmentId));
+
+                mutable.set(holder, level);
+            }));
+        }
+
+        if (json.has("effects")) {
+            List<MobEffectInstance> effects =
+                    readEffects(json.getAsJsonArray("effects"), registryAccess);
+
+            if (stack.is(Items.POTION)
+                    || stack.is(Items.SPLASH_POTION)
+                    || stack.is(Items.LINGERING_POTION)
+                    || stack.is(Items.TIPPED_ARROW)) {
+
+                stack.set(
+                        DataComponents.POTION_CONTENTS,
+                        new PotionContents(Optional.empty(), Optional.empty(), effects)
+                );
             }
 
-            return result;
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            if (stack.is(Items.SUSPICIOUS_STEW)) {
+                stack.set(
+                        DataComponents.SUSPICIOUS_STEW_EFFECTS,
+                        new SuspiciousStewEffects(toStewEntries(effects))
+                );
+            }
         }
-    } */
 
+        if (json.has("name")) {
+            stack.set(
+                    DataComponents.CUSTOM_NAME,
+                    Component.literal(json.get("name").getAsString())
+            );
+        }
+
+        if (json.has("description")) {
+            List<Component> loreList = new ArrayList<>();
+            loreList.add(Component.literal(json.get("description").getAsString()));
+            stack.set(DataComponents.LORE, new ItemLore(loreList));
+        }
+
+
+        return stack;
+    }
+
+    private static List<MobEffectInstance> readEffects(JsonArray array, RegistryAccess registryAccess) {
+        List<MobEffectInstance> effects = new ArrayList<>();
+
+        for (JsonElement element : array) {
+            if (!element.isJsonObject()) continue;
+
+            JsonObject obj = element.getAsJsonObject();
+            ResourceLocation id = ResourceLocation.tryParse(obj.get("effect").getAsString());
+            if (id == null) continue;
+
+            Holder<MobEffect> effect = registryAccess
+                    .lookupOrThrow(Registries.MOB_EFFECT)
+                    .getOrThrow(ResourceKey.create(Registries.MOB_EFFECT, id));
+
+            int duration = obj.has("duration") ? obj.get("duration").getAsInt() : 200;
+            int amplifier = obj.has("amplifier") ? obj.get("amplifier").getAsInt() : 0;
+
+            effects.add(new MobEffectInstance(effect, duration, amplifier));
+        }
+
+        return effects;
+    }
+
+    private static List<SuspiciousStewEffects.Entry> toStewEntries(List<MobEffectInstance> effects) {
+        return effects.stream()
+                .map(e -> new SuspiciousStewEffects.Entry(
+                        e.getEffect(),
+                        e.getDuration()
+                ))
+                .toList();
+    }
 }

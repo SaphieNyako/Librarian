@@ -26,6 +26,6 @@ public class BellsnickelRenderer extends MobRenderer<BellsnickelEntity, Bellsnic
 
     @Override
     public @NotNull ResourceLocation getTextureLocation(@NotNull BellsnickelEntity bellsnickelEntity) {
-        return new ResourceLocation(LoreMasterMod.MOD_ID, "textures/entity/bellsnickel.png");
+        return ResourceLocation.fromNamespaceAndPath(LoreMasterMod.MOD_ID, "textures/entity/bellsnickel.png");
     }
 }

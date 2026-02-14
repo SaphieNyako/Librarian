@@ -3,26 +3,42 @@ package com.saphienyako.lore_master.network;
 import com.saphienyako.lore_master.screens.LibrarianScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.network.NetworkEvent;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.List;
 import java.util.function.Supplier;
 
-public record LoreMasterScreenMessage(Component title, List<ItemStack> books) {
+public record LoreMasterScreenMessage() implements CustomPacketPayload {
 
-    public static void encode(LoreMasterScreenMessage msg, FriendlyByteBuf buffer) {
-        buffer.writeComponent(msg.title());
-        PacketUtil.writeList(msg.books(), buffer, FriendlyByteBuf::writeItem);
+    public static final Type<LoreMasterScreenMessage> TYPE =
+            new Type<>(ResourceLocation.fromNamespaceAndPath("lore_master", "open_lore_screen"));
+
+    public static final StreamCodec<FriendlyByteBuf, LoreMasterScreenMessage> STREAM_CODEC =
+            StreamCodec.of(LoreMasterScreenMessage::encode, LoreMasterScreenMessage::decode);
+
+    private static void encode(FriendlyByteBuf buffer, LoreMasterScreenMessage msg){
+
     }
 
-    public static LoreMasterScreenMessage decode(FriendlyByteBuf buffer) {
-        Component cmp = buffer.readComponent();
-        List<ItemStack> stacks = PacketUtil.readList(buffer, FriendlyByteBuf::readItem);
-        return new LoreMasterScreenMessage(cmp, stacks);
+    private static LoreMasterScreenMessage decode(FriendlyByteBuf buffer) {
+        return new LoreMasterScreenMessage();
     }
-    public void handle(Supplier<NetworkEvent.Context> supplier) {
-       Minecraft.getInstance().setScreen(new LibrarianScreen(this.title, this.books));
+
+
+    public static void handle(LoreMasterScreenMessage msg, IPayloadContext context) {
+        context.enqueueWork(() -> {
+            Minecraft.getInstance().setScreen(new LibrarianScreen());
+        });
+    }
+
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
     }
 }

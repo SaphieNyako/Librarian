@@ -1,6 +1,7 @@
 package com.saphienyako.lore_master.data;
 
 import com.google.common.collect.ImmutableList;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
@@ -25,7 +26,7 @@ public class LibraryBooks {
         }
     }
 
-    public static PreparableReloadListener createReloadListener() {
+    public static PreparableReloadListener createReloadListener(RegistryAccess registryAccess) {
         return new SimplePreparableReloadListener<Void>() {
             @Nonnull
             @Override
@@ -35,7 +36,7 @@ public class LibraryBooks {
 
             @Override
             protected void apply(@Nonnull Void value, @Nonnull ResourceManager manager, @Nonnull ProfilerFiller profiler) {
-                books = DatapackHelper.loadStackList(manager, "lore_master_books", "books");
+                books = DatapackHelper.loadStackList(manager, "lore_master_books", "books", registryAccess);
             }
         };
     }

@@ -10,12 +10,13 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import javax.annotation.Nonnull;
 
 public class BookWidget extends Button {
 
-    private static final ResourceLocation BUTTON = new ResourceLocation(LoreMasterMod.MOD_ID, "textures/gui/button.png");
+    private static final ResourceLocation BUTTON = ResourceLocation.fromNamespaceAndPath(LoreMasterMod.MOD_ID, "textures/gui/button.png");
     public static final int WIDTH = 25;
     public static final int HEIGHT = 25;
 
@@ -37,7 +38,7 @@ public class BookWidget extends Button {
     @Override
     public void onPress() {
         super.onPress();
-        LoreMasterNetwork.sendToServer(new RequestItemMessage(this.bookId));
+        PacketDistributor.sendToServer(new RequestItemMessage(this.bookId));
         this.screen.onClose();
     }
 

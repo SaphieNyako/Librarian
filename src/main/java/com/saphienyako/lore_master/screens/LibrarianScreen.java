@@ -1,5 +1,6 @@
 package com.saphienyako.lore_master.screens;
 
+import com.saphienyako.lore_master.data.LibraryBooks;
 import com.saphienyako.lore_master.screens.widgets.BookWidget;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -17,9 +18,9 @@ public class LibrarianScreen extends Screen {
     private final List<ItemStack> books;
     private final List<AbstractWidget> widgets;
 
-    public LibrarianScreen(Component name, List<ItemStack> books) {
-        super(name);
-        this.books = books;
+    public LibrarianScreen() {
+        super(Component.translatable("entity.lore_master.lore_master"));
+        this.books = LibraryBooks.getLibraryBooks();
         this.widgets = new ArrayList<>();
     }
 
@@ -44,7 +45,7 @@ public class LibrarianScreen extends Screen {
     @Override
     public void render(@Nonnull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         graphics.pose().pushPose();
-        this.renderBackground(graphics);
+        this.renderBackground(graphics, mouseX, mouseY, partialTicks);
         graphics.pose().translate(0, 0, 20);
         super.render(graphics, mouseX, mouseY, partialTicks);
         graphics.pose().translate(0, 0, 20);

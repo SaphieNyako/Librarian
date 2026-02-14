@@ -2,26 +2,27 @@ package com.saphienyako.lore_master.block;
 
 import com.saphienyako.lore_master.LoreMasterMod;
 import com.saphienyako.lore_master.item.ModItems;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredBlock;
+import net.neoforged.neoforge.registries.DeferredRegister;
+
 
 import java.util.function.Supplier;
 
 public class ModBlocks {
 
-    public static final DeferredRegister<Block> BLOCKS =
-            DeferredRegister.create(ForgeRegistries.BLOCKS, LoreMasterMod.MOD_ID);
+    public static final DeferredRegister.Blocks BLOCKS =
+            DeferredRegister.createBlocks(LoreMasterMod.MOD_ID);
 
-    public static final RegistryObject<Block> LIBRARY_BELL = registerBlockAndItem("library_bell",
-            () -> new LibraryBellBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
+    public static final DeferredBlock<LibraryBellBlock> LIBRARY_BELL = registerBlock("library_bell",
+            () -> new LibraryBellBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK)
                     .strength(3f, 10f)
                     .noLootTable()
                     .noOcclusion()
@@ -29,18 +30,14 @@ public class ModBlocks {
                     .noCollission()
                     .sound(SoundType.ANVIL)));
 
-    private static <T extends Block> RegistryObject<T> registerBlock(String name, Supplier<T> block) {
-        return BLOCKS.register(name, block);
-    }
-
-    private static<T extends Block> RegistryObject<T> registerBlockAndItem(String name, Supplier<T> block){
-        RegistryObject<T> toReturn = BLOCKS.register(name, block);
+    private static <T extends Block> DeferredBlock<T> registerBlock(String name, Supplier<T> block) {
+        DeferredBlock<T> toReturn = BLOCKS.register(name, block);
         registerBlockItem(name, toReturn);
         return toReturn;
     }
 
-    private static <T extends Block> RegistryObject<Item> registerBlockItem(String name, RegistryObject<T> block) {
-        return ModItems.ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties()));
+    private static <T extends Block> void registerBlockItem(String name, DeferredBlock<T> block) {
+        ModItems.ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties()));
     }
 
     public static void register(IEventBus eventBus) {
