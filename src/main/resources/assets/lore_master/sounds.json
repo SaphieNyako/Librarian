@@ -23,5 +23,35 @@
     "sounds": [
       "lore_master:bellsnickel_trade"
     ]
+  },
+  "bellsnickel_interact": {
+    "subtitles": "message.lore_master.bellsnickel_interact",
+    "sounds": [
+      "lore_master:bellsnickel_interact"
+    ]
+  },
+  "bellsnickel_summon_01": {
+    "subtitles": "message.lore_master.bellsnickel_summon_01",
+    "sounds": [
+      "lore_master:bellsnickel_summon_01"
+    ]
+  },
+  "bellsnickel_summon_02": {
+    "subtitles": "message.lore_master.bellsnickel_summon_02",
+    "sounds": [
+      "lore_master:bellsnickel_summon_02"
+    ]
+  },
+  "bellsnickel_summon_03": {
+    "subtitles": "message.lore_master.bellsnickel_summon_03",
+    "sounds": [
+      "lore_master:bellsnickel_summon_03"
+    ]
+  },
+  "bellsnickel_security": {
+    "subtitles": "message.lore_master.bellsnickel_security",
+    "sounds": [
+      "lore_master:bellsnickel_security"
+    ]
   }
 }

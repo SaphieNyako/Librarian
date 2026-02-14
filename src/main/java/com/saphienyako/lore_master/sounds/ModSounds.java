@@ -18,6 +18,12 @@ public class ModSounds {
     public static final RegistryObject<SoundEvent> BELLSNICKEL_DEATH = registerSoundEvents("bellsnickel_death");
     public static final RegistryObject<SoundEvent> BELLSNICKEL_TRADE = registerSoundEvents("bellsnickel_trade");
 
+    public static final RegistryObject<SoundEvent> BELLSNICKEL_INTERACT = registerSoundEvents("bellsnickel_interact");
+    public static final RegistryObject<SoundEvent> BELLSNICKEL_SUMMON_01 = registerSoundEvents("bellsnickel_summon_01");
+    public static final RegistryObject<SoundEvent> BELLSNICKEL_SUMMON_02 = registerSoundEvents("bellsnickel_summon_02");
+    public static final RegistryObject<SoundEvent> BELLSNICKEL_SUMMON_03 = registerSoundEvents("bellsnickel_summon_03");
+    public static final RegistryObject<SoundEvent> BELLSNICKEL_SECURITY = registerSoundEvents("bellsnickel_security");
+
     private static RegistryObject<SoundEvent> registerSoundEvents(String name) {
         return SOUND_EVENTS.register(name, () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(LoreMasterMod.MOD_ID, name)));
     }

@@ -22,7 +22,16 @@
         "element_type": "minecraft:single_pool_element",
         "location": "lore_master:library",
         "processors": "lore_master:library_processor",
-        "projection": "rigid"
+        "projection": "rigid",
+        "conditions": [
+          {
+            "type": "forge:not",
+            "value": {
+              "type": "forge:mod_loaded",
+              "modid": "waystones"
+            }
+          }
+        ]
       }
     }
   ]

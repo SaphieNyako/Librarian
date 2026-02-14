@@ -6,11 +6,13 @@ import com.saphienyako.lore_master.block.entity.LibraryBellBlockEntity;
 import com.saphienyako.lore_master.entity.BellsnickelEntity;
 import com.saphienyako.lore_master.entity.LoreMasterEntity;
 import com.saphienyako.lore_master.entity.ModEntities;
+import com.saphienyako.lore_master.sounds.ModSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
@@ -175,6 +177,9 @@ public class LibraryBellBlock extends BaseEntityBlock implements EntityBlock {
         golem.setPos(position);
         level.addFreshEntity(golem);
         blockEntity.setSecurity(golem.getUUID());
+        if (ModList.get().isLoaded("feywild")) {
+           golem.playSound(ModSounds.BELLSNICKEL_SECURITY.get());
+        }
     }
 
     public void summonLoreMaster(Level level, Player player, LibraryBellBlockEntity blockEntity, BlockPos pos){
@@ -192,6 +197,9 @@ public class LibraryBellBlock extends BaseEntityBlock implements EntityBlock {
             }
             level.addFreshEntity(entity);
             blockEntity.setLoreMaster(entity.getUUID());
+            if(blockEntity.getAnnoyance() < 10) {
+                entity.playSound(getSummonSound(entity.level()));
+            }
         } else {
             //if Feywild is not installed
             LoreMasterEntity entity = new LoreMasterEntity(ModEntities.LORE_MASTER.get(), level);
@@ -212,10 +220,17 @@ public class LibraryBellBlock extends BaseEntityBlock implements EntityBlock {
             blockEntity.setLoreMaster(entity.getUUID());
         }
 
-
-
         //if Feywild is installed
 
+    }
+
+    public SoundEvent getSummonSound(Level level){
+        return switch (level.random.nextInt(5)) {
+            case 0 -> ModSounds.BELLSNICKEL_SUMMON_01.get();
+            case 1 -> ModSounds.BELLSNICKEL_SUMMON_02.get();
+            case 2 -> ModSounds.BELLSNICKEL_SUMMON_03.get();
+            default -> null;
+        };
     }
 }
 

@@ -1,14 +1,19 @@
 {
+  "conditions": [
+    {
+      "type": "forge:not",
+      "value": {
+        "type": "forge:mod_loaded",
+        "modid": "feywild"
+      }
+    }
+  ],
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "group": "library_bell",
   "key": {
-    "#": {
-      "item": "minecraft:gold_ingot"
-    },
-    "L": {
-      "item": "minecraft:lectern"
-    }
+    "#": { "item": "minecraft:gold_ingot" },
+    "L": { "item": "minecraft:lectern" }
   },
   "pattern": [
     " # ",

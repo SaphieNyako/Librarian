@@ -175,6 +175,7 @@ public class BellsnickelEntity extends PathfinderMob {
             if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
                 player.sendSystemMessage(Component.translatable("message.lore_master.initial"));
                 LoreMasterNetwork.sendToPlayer(new LoreMasterScreenMessage(Component.translatable("entity.lore_master.lore_master"), LibraryBooks.getLibraryBooks()), serverPlayer);
+                this.playSound(getTradeSound());
                 player.swing(hand, true);
             }
             return InteractionResult.sidedSuccess(level.isClientSide);
@@ -209,6 +210,12 @@ public class BellsnickelEntity extends PathfinderMob {
         if (random.nextFloat() < 0.1f) {
             return ModSounds.BELLSNICKEL_AMBIANCE.get();
         } else return null;
+    }
+
+    protected SoundEvent getTradeSound(){
+        if (random.nextBoolean()) {
+            return ModSounds.BELLSNICKEL_INTERACT.get();
+        } else return ModSounds.BELLSNICKEL_TRADE.get();
     }
 
     @Override
