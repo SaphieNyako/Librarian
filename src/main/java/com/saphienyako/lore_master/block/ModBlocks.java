@@ -21,9 +21,8 @@ public class ModBlocks {
             DeferredRegister.create(ForgeRegistries.BLOCKS, LoreMasterMod.MOD_ID);
 
     public static final RegistryObject<Block> LIBRARY_BELL = registerBlockAndItem("library_bell",
-            () -> new LibraryBellBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
-                    .strength(3f, 10f)
-                    .noLootTable()
+            () -> new LibraryBellBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).requiresCorrectToolForDrops()
+                    .strength(2f, 2f )
                     .noOcclusion()
                     .randomTicks()
                     .noCollission()
