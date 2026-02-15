@@ -1,10 +1,4 @@
 {
-  "conditions": [
-    {
-      "type": "forge:mod_loaded",
-      "modid": "feywild"
-    }
-  ],
   "type": "feywild:fey_altar",
   "ingredients": [
     {
@@ -25,6 +19,12 @@
   ],
   "output": {
     "count": 1,
-    "item": "lore_master:library_bell"
-  }
+    "id": "lore_master:library_bell"
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "feywild"
+    }
+  ]
 }

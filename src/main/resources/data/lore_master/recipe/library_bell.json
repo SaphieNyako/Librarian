@@ -1,13 +1,5 @@
 {
-  "conditions": [
-    {
-      "type": "forge:not",
-      "value": {
-        "type": "forge:mod_loaded",
-        "modid": "feywild"
-      }
-    }
-  ],
+
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "group": "library_bell",
@@ -22,6 +14,14 @@
   ],
   "result": {
     "count": 1,
-    "item": "lore_master:library_bell"
+    "id": "lore_master:library_bell"
+  },"neoforge:conditions": [
+  {
+    "type": "neoforge:not",
+    "value": {
+      "type": "neoforge:mod_loaded",
+      "modid": "feywild"
+    }
   }
+  ]
 }

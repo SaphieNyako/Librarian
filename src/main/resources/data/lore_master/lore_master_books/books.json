@@ -73,5 +73,10 @@
       "patchouli:book": "productivebees:guide"
     },
     "count": 1
+  },
+  {
+    "mod": "hexerei",
+    "item": "hexerei:book_of_shadows",
+    "count": 1
   }
 ]
