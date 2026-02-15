@@ -22,9 +22,8 @@ public class ModBlocks {
             DeferredRegister.createBlocks(LoreMasterMod.MOD_ID);
 
     public static final DeferredBlock<LibraryBellBlock> LIBRARY_BELL = registerBlock("library_bell",
-            () -> new LibraryBellBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK)
-                    .strength(3f, 10f)
-                    .noLootTable()
+            () -> new LibraryBellBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).requiresCorrectToolForDrops()
+                    .strength(2f, 2f)
                     .noOcclusion()
                     .randomTicks()
                     .noCollission()
