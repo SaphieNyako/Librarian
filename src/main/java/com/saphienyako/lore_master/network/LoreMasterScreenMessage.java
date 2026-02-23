@@ -1,5 +1,6 @@
 package com.saphienyako.lore_master.network;
 
+import com.saphienyako.lore_master.network.handler.OpenMenuMessageClientHandler;
 import com.saphienyako.lore_master.screens.LibrarianScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
@@ -9,6 +10,8 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.List;
@@ -33,7 +36,9 @@ public record LoreMasterScreenMessage() implements CustomPacketPayload {
 
     public static void handle(LoreMasterScreenMessage msg, IPayloadContext context) {
         context.enqueueWork(() -> {
-            Minecraft.getInstance().setScreen(new LibrarianScreen());
+            if (FMLEnvironment.dist == Dist.CLIENT) {
+                OpenMenuMessageClientHandler.openMenu(msg);
+            }
         });
     }
 
