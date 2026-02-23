@@ -1,10 +1,13 @@
 package com.saphienyako.lore_master.network;
 
+import com.saphienyako.lore_master.network.handler.OpenMenuMessageClientHandler;
 import com.saphienyako.lore_master.screens.LibrarianScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.network.NetworkEvent;
 
 import java.util.List;
@@ -23,6 +26,11 @@ public record LoreMasterScreenMessage(Component title, List<ItemStack> books) {
         return new LoreMasterScreenMessage(cmp, stacks);
     }
     public void handle(Supplier<NetworkEvent.Context> supplier) {
-       Minecraft.getInstance().setScreen(new LibrarianScreen(this.title, this.books));
+        supplier.get().enqueueWork(() -> {
+            if (FMLEnvironment.dist == Dist.CLIENT) {
+                OpenMenuMessageClientHandler.openMenu(this.title, this.books);
+            }
+        });
+        supplier.get().setPacketHandled(true);
     }
 }
