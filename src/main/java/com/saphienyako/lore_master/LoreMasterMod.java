@@ -46,7 +46,7 @@ import org.slf4j.Logger;
 public class LoreMasterMod
 {
     public static final String MOD_ID = "lore_master";
-    private static final Logger LOGGER = LogUtils.getLogger();
+    public static final Logger LOGGER = LogUtils.getLogger();
 
     @SuppressWarnings("removal")
     public LoreMasterMod(IEventBus modEventBus, ModContainer modContainer) {

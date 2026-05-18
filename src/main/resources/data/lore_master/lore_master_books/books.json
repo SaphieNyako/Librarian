@@ -27,7 +27,7 @@
   {
     "mod": "bloodmagic",
     "item": "patchouli:guide_book",
-    "nbt": {
+    "components": {
       "patchouli:book": "bloodmagic:guide"
     },
     "count": 1
@@ -35,7 +35,7 @@
   {
     "mod": "naturesaura",
     "item": "patchouli:guide_book",
-    "nbt": {
+    "components": {
       "patchouli:book": "naturesaura:book"
     },
     "count": 1
@@ -43,7 +43,7 @@
   {
     "mod": "psi",
     "item": "patchouli:guide_book",
-    "nbt": {
+    "components": {
       "patchouli:book": "psi:encyclopaedia_psionica"
     },
     "count": 1
@@ -61,7 +61,7 @@
   {
     "mod": "mysticalagriculture",
     "item": "patchouli:guide_book",
-    "nbt": {
+    "components": {
       "patchouli:book": "mysticalagriculture:guide"
     },
     "count": 1
@@ -69,7 +69,7 @@
   {
     "mod": "productivebees",
     "item": "patchouli:guide_book",
-    "nbt": {
+    "components": {
       "patchouli:book": "productivebees:guide"
     },
     "count": 1
@@ -77,6 +77,14 @@
   {
     "mod": "hexerei",
     "item": "hexerei:book_of_shadows",
+    "count": 1
+  },
+  {
+    "mod": "apotheosis",
+    "item": "patchouli:guide_book",
+    "components": {
+      "patchouli:book": "apotheosis:apoth_chronicle"
+    },
     "count": 1
   }
 ]

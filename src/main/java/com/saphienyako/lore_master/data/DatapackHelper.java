@@ -1,8 +1,11 @@
 package com.saphienyako.lore_master.data;
 
 import com.google.gson.*;
+import com.mojang.serialization.JsonOps;
+import com.saphienyako.lore_master.LoreMasterMod;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -92,6 +95,22 @@ public class DatapackHelper {
 
         int count = json.has("count") ? json.get("count").getAsInt() : 1;
         ItemStack stack = new ItemStack(item, count);
+
+        if (json.has("components")) {
+            JsonObject componentsJson = json.getAsJsonObject("components");
+
+            DataComponentPatch patch = DataComponentPatch.CODEC.parse(
+                    JsonOps.INSTANCE,
+                    componentsJson
+            ).resultOrPartial(error ->
+                    LoreMasterMod.LOGGER.error("Failed to parse components: {}", error)
+            ).orElse(null);
+
+            if (patch != null) {
+                stack.applyComponents(patch);
+            }
+        }
+
 
         if (json.has("enchantments")) {
             JsonObject enchantments = json.getAsJsonObject("enchantments");
