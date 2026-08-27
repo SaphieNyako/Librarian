@@ -5,5 +5,6 @@
   "message.lore_master.bell_angry": "[Lore Master] SECURITY!!",
   "message.lore_master.bell_annoyed": "[Lore Master] I'm here already, please be quiet!",
   "entity.lore_master.lore_master": "Lore Master",
+  "entity.lore_master.bellsnickel": "Lore Master Bellsnickel",
   "title.lore_master.books_available": "- Available Books -"
 }
